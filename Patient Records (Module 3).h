@@ -1,7 +1,7 @@
 #ifndef PATIENT_RECORD_BST_H
 #define PATIENT_RECORD_BST_H
 
-#include "Patient.h"
+#include "Patient Reg (Module 1).h"
 #include <string>
 
 struct RecordNode {
