@@ -1,65 +1,106 @@
 #include <iostream>
-#include "Patient.h"
-#include "MinHeap.h"
-#include "MedicalRecords.h"
-#include "Doctor.h"
+#include <string>
+// Include your existing module headers
+#include "Patient Reg (Module 1).h"
+#include "(Module 1)MinHeap.cpp"
+#include "Patient Records (Module 3).h" 
+#include "Doctor and resources (Module 2).h"
 
 int main() {
+    // ==============================
+    // 1. MODULE OBJECTS (Dynamic Memory)
+    // ==============================
+    // These objects manage data in RAM using linked lists, trees, and vectors
+    MinHeap hospitalQueue;          
+    PatientAVL recordTree;          
+    Doctor doctorManager;           
+    
+    // Starting ID for the session
+    int nextId = 101; 
+
+    std::cout << ">>> Hospital Management System <<<\n";
 
     // ==============================
-    // MODULE OBJECTS
+    // 2. MAIN INTERACTIVE MENU
     // ==============================
+    int choice;
+    while (true) {
+        std::cout << "\n========================================";
+        std::cout << "\n      HOSPITAL MANAGEMENT SYSTEM";
+        std::cout << "\n========================================";
+        std::cout << "\n1. Register New Patient (Emergency)";
+        std::cout << "\n2. Process/Treat Next Patient (Min-Heap)";
+        std::cout << "\n3. Display Waiting Queue (Min-Heap)";
+        std::cout << "\n4. Display All Patient Records (AVL Tree)";
+        std::cout << "\n5. Search Patient by ID (AVL Search)";
+        std::cout << "\n6. Manage Doctors & Resources";
+        std::cout << "\n7. Exit System";
+        std::cout << "\n----------------------------------------";
+        std::cout << "\nEnter choice: ";
+        
+        if (!(std::cin >> choice)) {
+            std::cin.clear();
+            std::cin.ignore(1000, '\n');
+            continue;
+        }
 
-    MinHeap emergencyQueue;          // Module 1: Priority Queue
-    MedicalRecords patientRecords;   // Module 3: BST + File I/O
-    DoctorQueue doctorQueue;         // Module 2: Doctors
+        if (choice == 1) {
+            Patient p;
+            p.id = nextId++;
+            std::cin.ignore();
+            std::cout << "Enter Name: "; std::getline(std::cin, p.name);
+            std::cout << "Enter Age: "; std::cin >> p.age;
+            std::cin.ignore();
+            std::cout << "Enter Symptoms: "; std::getline(std::cin, p.symptoms);
+            std::cout << "Priority (1:Critical, 2:Urgent, 3:Standard): "; 
+            std::cin >> p.priority;
 
-    int nextPatientID = 1;
+            // Data is stored in the Heap and AVL Tree structures in RAM
+            hospitalQueue.insert(p);
+            recordTree.addRecord(p);
+            
+            std::cout << "\n[Success] Patient " << p.name << " registered with ID: " << p.id << "\n";
 
-    // ==============================
-    // LOAD DATA FROM FILES
-    // ==============================
+        } else if (choice == 2) {
+            if (hospitalQueue.isEmpty()) {
+                std::cout << "\n[Info] No patients currently in the emergency queue.\n";
+            } else {
+                // Extracting from heap (O(log n))
+                Patient p = hospitalQueue.extractMin();
+                std::cout << "\n>>> TREATING PATIENT <<<\n";
+                std::cout << "Name: " << p.name << " | ID: " << p.id << " | Symptoms: " << p.symptoms << "\n";
+                
+                // Assign to doctor object in memory
+                doctorManager.assignPatient(&p);
+            }
 
-    patientRecords.loadFromFile("patients.csv");
-    emergencyQueue.loadFromFile("queue.csv");      // simple heap load
-    doctorQueue.loadFromFile("doctors.csv");       // doctor list load
+        } else if (choice == 3) {
+            // Displays the current state of the vector-based heap
+            hospitalQueue.display();
 
-    std::cout << "Data loaded successfully.\n";
+        } else if (choice == 4) {
+            // Performs In-order traversal of the AVL tree in memory
+            std::cout << "\n=== Permanent Medical Records (AVL - Sorted by ID) ===\n";
+            recordTree.displayAll();
 
-    // ==============================
-    // SIMPLE DEMO FLOW (TEMP)
-    // ==============================
+        } else if (choice == 5) {
+            int sid;
+            std::cout << "Enter Patient ID to Search: ";
+            std::cin >> sid;
+            // O(log n) search through dynamic memory nodes
+            recordTree.find(sid);
 
-    Patient p;
-    p.id = nextPatientID++;
-    p.name = "Ali";
-    p.age = 45;
-    p.symptoms = "Heart Attack";
-    p.priority = 1;
+        } else if (choice == 6) {
+            doctorManager.showDoctors();
 
-    emergencyQueue.insert(p);
-    patientRecords.addRecord(p);
+        } else if (choice == 7) {
+            std::cout << "\nCleaning up dynamic memory... Exiting system.\n";
+            break;
 
-    // Assign doctor (optional module)
-    doctorQueue.assignPatient(&p);
-
-    // ==============================
-    // DISPLAY (FOR TESTING)
-    // ==============================
-
-    emergencyQueue.display();
-    patientRecords.displayAll();
-    doctorQueue.showDoctors();
-
-    // ==============================
-    // SAVE DATA TO FILES
-    // ==============================
-
-    patientRecords.saveToFile("patients.csv");
-    emergencyQueue.saveToFile("queue.csv");
-    doctorQueue.saveToFile("doctors.csv");
-
-    std::cout << "Data saved. Program exiting...\n";
+        } else {
+            std::cout << "\n[Error] Invalid choice. Please try again.\n";
+        }
+    }
 
     return 0;
 }
