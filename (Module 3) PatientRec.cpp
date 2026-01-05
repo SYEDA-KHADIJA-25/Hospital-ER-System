@@ -1,107 +1,64 @@
-#include "PatientRecordBST.h"
+#ifndef MEDICAL_RECORDS_H
+#define MEDICAL_RECORDS_H
+
 #include <iostream>
 #include <fstream>
-#include <sstream>
+#include <string>
+#include <vector>
+using namespace std;
 
-PatientRecordBST::PatientRecordBST() {
-    root = nullptr;
-}
+// =====================
+// Patient Class
+// =====================
+class Patient {
+public:
+    int id;
+    string name;
+    int age;
+    int priority;
+    vector<string> medicalHistory;
 
-// -------- INSERT --------
-RecordNode* PatientRecordBST::insertNode(RecordNode* node, Patient p) {
-    if(node == nullptr) {
-        RecordNode* newNode = new RecordNode{p, nullptr, nullptr};
-        return newNode;
-    }
+    Patient();
+    Patient(int id, string name, int age, int priority);
 
-    if(p.id < node->patient.id)
-        node->left = insertNode(node->left, p);
-    else
-        node->right = insertNode(node->right, p);
+    void addHistory(const string& record);
+    bool isValid() const;
+};
 
-    return node;
-}
+// =====================
+// BST Node
+// =====================
+struct RecordNode {
+    Patient data;
+    RecordNode* left;
+    RecordNode* right;
 
-void PatientRecordBST::insert(Patient p) {
-    root = insertNode(root, p);
-}
+    RecordNode(const Patient& p);
+};
 
-// -------- SEARCH --------
-RecordNode* PatientRecordBST::searchNode(RecordNode* node, int id) {
-    if(node == nullptr || node->patient.id == id)
-        return node;
+// =====================
+// Medical Records (BST)
+// =====================
+class MedicalRecords {
+private:
+    RecordNode* root;
 
-    if(id < node->patient.id)
-        return searchNode(node->left, id);
-    else
-        return searchNode(node->right, id);
-}
+    RecordNode* insertRecord(RecordNode* node, const Patient& p);
+    RecordNode* searchRecord(RecordNode* node, int id);
+    void inorderDisplay(RecordNode* node);
+    void saveInorder(RecordNode* node, ofstream& file);
 
-Patient* PatientRecordBST::search(int id) {
-    RecordNode* result = searchNode(root, id);
-    if(result)
-        return &result->patient;
-    return nullptr;
-}
+public:
+    MedicalRecords();
 
-// -------- DISPLAY --------
-void PatientRecordBST::inorderDisplay(RecordNode* node) {
-    if(node == nullptr) return;
+    void addPatient(const Patient& p);
+    void addMedicalHistory(int patientID, const string& record);
+    void searchByID(int id);
+    void displayAll();
 
-    inorderDisplay(node->left);
+    // File Handling
+    void saveToFile(const string& filename);
+    void loadFromFile(const string& filename);
+};
 
-    std::cout << "ID: " << node->patient.id
-              << " | Name: " << node->patient.name
-              << " | Age: " << node->patient.age
-              << " | Priority: " << node->patient.priority << "\n";
-
-    inorderDisplay(node->right);
-}
-
-void PatientRecordBST::displayAll() {
-    std::cout << "\n=== Patient Records (BST Inorder) ===\n";
-    inorderDisplay(root);
-}
-
-// -------- FILE SAVE --------
-void PatientRecordBST::saveNodeToFile(RecordNode* node, std::ofstream& file) {
-    if(node == nullptr) return;
-
-    saveNodeToFile(node->left, file);
-
-    file << node->patient.id << ","
-         << node->patient.name << ","
-         << node->patient.age << ","
-         << node->patient.symptoms << ","
-         << node->patient.priority << "\n";
-
-    saveNodeToFile(node->right, file);
-}
-
-void PatientRecordBST::saveToFile(const std::string& filename) {
-    std::ofstream file(filename);
-    saveNodeToFile(root, file);
-    file.close();
-}
-
-// -------- FILE LOAD --------
-void PatientRecordBST::loadFromFile(const std::string& filename) {
-    std::ifstream file(filename);
-    if(!file) return;
-
-    std::string line;
-    while(getline(file, line)) {
-        std::stringstream ss(line);
-        std::string temp;
-        Patient p;
-
-        getline(ss, temp, ','); p.id = stoi(temp);
-        getline(ss, p.name, ',');
-        getline(ss, temp, ','); p.age = stoi(temp);
-        getline(ss, p.symptoms, ',');
-        getline(ss, temp); p.priority = stoi(temp);
-
-        insert(p);
-    }
-    file.close();
-}
+#endif
