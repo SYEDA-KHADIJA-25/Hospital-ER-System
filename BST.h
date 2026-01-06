@@ -1,5 +1,3 @@
-code for bst.h:
-
 #ifndef BST_H
 #define BST_H
 
